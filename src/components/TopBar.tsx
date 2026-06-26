@@ -86,10 +86,6 @@ export function TopBar({ state, onTogglePause, onSetSpeed }: TopBarProps) {
         <h1 className="text-sm font-semibold tracking-wide text-slate-300 uppercase">
           Warehouse Simulator
         </h1>
-        <span className="text-slate-600">|</span>
-        <span className="tabular-nums text-teal-400 font-semibold">
-          WK {state.week}
-        </span>
       </div>
 
       <div className="flex items-center gap-6 flex-wrap">

@@ -80,7 +80,7 @@ export function createInitialState(difficulty: Difficulty = 'normal'): GameState
     negativeCashWeeks: 0,
     gameOver: false,
     gameOverReason: null,
-    paused: true,
+    paused: false,
     speed: 1,
     difficulty,
     capexInvested: 80_000,
@@ -239,30 +239,6 @@ export function tick(state: GameState): GameState {
   s.forecast = forecast;
   s.forecastWeeks = forecastWeeks;
   s.netWorth = computeNetWorth(s);
-
-  // Auto-pause at critical thresholds so the player has time to react
-  if (!s.gameOver) {
-    const ratio = s.backlog / Math.max(1, s.throughputCapacity);
-    let pauseReason: string | null = null;
-
-    if (ratio >= BACKLOG_SOFT_THRESHOLD) {
-      pauseReason = `Backlog at ${ratio.toFixed(1)}× capacity. Churn penalties at ${BACKLOG_SOFT_THRESHOLD}×, game over at ${BACKLOG_HARD_THRESHOLD}×.`;
-    } else if (s.strikeWeeksLeft > 0 && state.strikeWeeksLeft === 0) {
-      pauseReason = 'Labor strike started — productivity cut to 20%. Raise wages to negotiate.';
-    } else if (s.equipmentBreakdown && !state.equipmentBreakdown) {
-      pauseReason = 'Equipment breakdown — throughput reduced 25%. Pay repair fee.';
-    } else if (s.cash < 0 && state.cash >= 0) {
-      pauseReason = `Cash went negative. You have ${NEGATIVE_CASH_LIMIT} weeks to recover before insolvency.`;
-    }
-
-    if (pauseReason) {
-      s.paused = true;
-      s.notifications = [
-        makeNotification(s.week, 'warning', 'Game Paused', pauseReason),
-        ...s.notifications,
-      ].slice(0, 30);
-    }
-  }
 
   return s;
 }

@@ -93,13 +93,6 @@ function ThresholdMeter({
   );
 }
 
-const BOTTLENECK_STYLES = {
-  inventory: 'border-amber-500/50 bg-amber-500/10 text-amber-400',
-  labor: 'border-red-500/50 bg-red-500/10 text-red-400',
-  equipment: 'border-amber-500/50 bg-amber-500/10 text-amber-400',
-  balanced: 'border-teal-500/30 bg-teal-500/5 text-teal-400',
-};
-
 export function HealthPanel({ state }: { state: GameState }) {
   const ratio = backlogRatio(state.backlog, state.throughputCapacity);
   const stress = backlogStress(ratio);
@@ -111,16 +104,9 @@ export function HealthPanel({ state }: { state: GameState }) {
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 space-y-3">
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <h2 className="text-xs uppercase tracking-widest text-slate-500 font-medium">
-          Ops Health
-        </h2>
-        <div
-          className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border font-semibold ${BOTTLENECK_STYLES[diag.bottleneck]}`}
-        >
-          Bottleneck: {diag.label}
-        </div>
-      </div>
+      <h2 className="text-xs uppercase tracking-widest text-slate-500 font-medium">
+        Ops Health
+      </h2>
 
       <div className="flex flex-wrap gap-4">
         <ThresholdMeter
@@ -192,40 +178,10 @@ export function HealthPanel({ state }: { state: GameState }) {
               </div>
             </>
           ) : (
-            <div className="text-slate-600">Press play to start</div>
+            <div className="text-slate-600">Waiting for week 1…</div>
           )}
         </div>
       </div>
-
-      {(state.strikeWeeksLeft > 0 || state.equipmentBreakdown || stress === 'critical' || stress === 'churn') && (
-        <div className="flex flex-wrap gap-2">
-          {state.strikeWeeksLeft > 0 && (
-            <span className="text-[10px] px-2 py-1 rounded bg-red-500/15 border border-red-500/40 text-red-400">
-              Strike — productivity 20% for {state.strikeWeeksLeft}wk
-            </span>
-          )}
-          {state.equipmentBreakdown && (
-            <span className="text-[10px] px-2 py-1 rounded bg-red-500/15 border border-red-500/40 text-red-400">
-              Equipment breakdown — throughput −25%
-            </span>
-          )}
-          {stress === 'churn' && (
-            <span className="text-[10px] px-2 py-1 rounded bg-amber-500/15 border border-amber-500/40 text-amber-400">
-              Above {BACKLOG_SOFT_THRESHOLD}× — customer churn penalties active
-            </span>
-          )}
-          {stress === 'critical' && (
-            <span className="text-[10px] px-2 py-1 rounded bg-red-500/15 border border-red-500/40 text-red-400 stat-flash">
-              {formatBacklogRatio(ratio)} — game over at {BACKLOG_HARD_THRESHOLD}×
-            </span>
-          )}
-          {state.cash < 0 && (
-            <span className="text-[10px] px-2 py-1 rounded bg-amber-500/15 border border-amber-500/40 text-amber-400">
-              Cash negative — {NEGATIVE_CASH_LIMIT - state.negativeCashWeeks} week(s) until insolvency
-            </span>
-          )}
-        </div>
-      )}
     </div>
   );
 }

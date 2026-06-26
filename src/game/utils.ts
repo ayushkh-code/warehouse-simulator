@@ -4,6 +4,7 @@ import {
   BASE_DEMAND,
   DIFFICULTY_CONFIG,
   FORECAST_HORIZON,
+  NEGATIVE_CASH_LIMIT,
 } from './constants';
 import type { Difficulty, DemandModifier, GameState } from './types';
 
@@ -250,5 +251,113 @@ export function diagnoseBottleneck(
 
 export function inventoryRunwayWeeks(inventory: number, weeklyDemand: number): number {
   return inventory / Math.max(1, weeklyDemand);
+}
+
+export interface BulletinItem {
+  id: string;
+  kind: 'bottleneck' | 'alert' | 'event';
+  severity: 'info' | 'warning' | 'danger' | 'success';
+  title: string;
+  message: string;
+  dismissable: boolean;
+  notificationId?: string;
+}
+
+export function buildBulletinItems(state: GameState): BulletinItem[] {
+  const items: BulletinItem[] = [];
+  const diag = diagnoseBottleneck(state);
+  const ratio = backlogRatio(state.backlog, state.throughputCapacity);
+  const stress = backlogStress(ratio);
+  const forecastDemand = state.forecast[0] ?? 0;
+  const invRunway = inventoryRunwayWeeks(state.inventory, forecastDemand);
+
+  if (diag.bottleneck !== 'balanced') {
+    items.push({
+      id: 'bottleneck',
+      kind: 'bottleneck',
+      severity: diag.bottleneck === 'labor' ? 'danger' : 'warning',
+      title: `Bottleneck: ${diag.label}`,
+      message: diag.detail,
+      dismissable: false,
+    });
+  }
+
+  if (state.strikeWeeksLeft > 0) {
+    items.push({
+      id: 'strike',
+      kind: 'alert',
+      severity: 'danger',
+      title: 'Labor Strike',
+      message: `Productivity at 20% for ${state.strikeWeeksLeft} more week(s). Raise wages above market +10% to negotiate.`,
+      dismissable: false,
+    });
+  }
+
+  if (state.equipmentBreakdown) {
+    items.push({
+      id: 'breakdown',
+      kind: 'alert',
+      severity: 'danger',
+      title: 'Equipment Breakdown',
+      message: 'Throughput reduced 25%. Pay the repair fee in the control panel.',
+      dismissable: false,
+    });
+  }
+
+  if (stress === 'critical') {
+    items.push({
+      id: 'backlog-critical',
+      kind: 'alert',
+      severity: 'danger',
+      title: `Backlog ${formatBacklogRatio(ratio)}`,
+      message: `Game over at ${BACKLOG_HARD_THRESHOLD}× capacity. Clear backlog or scale up immediately.`,
+      dismissable: false,
+    });
+  } else if (stress === 'churn') {
+    items.push({
+      id: 'backlog-churn',
+      kind: 'alert',
+      severity: 'warning',
+      title: `Backlog ${formatBacklogRatio(ratio)}`,
+      message: `Above ${BACKLOG_SOFT_THRESHOLD}× — customer churn penalties are active.`,
+      dismissable: false,
+    });
+  }
+
+  if (state.cash < 0) {
+    items.push({
+      id: 'cash-negative',
+      kind: 'alert',
+      severity: 'warning',
+      title: 'Cash Negative',
+      message: `${NEGATIVE_CASH_LIMIT - state.negativeCashWeeks} week(s) left before insolvency (${state.negativeCashWeeks}/${NEGATIVE_CASH_LIMIT} deficit streak).`,
+      dismissable: false,
+    });
+  }
+
+  if (invRunway < 2 && diag.bottleneck !== 'inventory') {
+    items.push({
+      id: 'inventory-low',
+      kind: 'alert',
+      severity: 'warning',
+      title: 'Low Inventory',
+      message: `~${invRunway.toFixed(1)} weeks of stock at forecast demand. Place a purchase order.`,
+      dismissable: false,
+    });
+  }
+
+  for (const n of state.notifications.filter((x) => !x.dismissed)) {
+    items.push({
+      id: n.id,
+      kind: 'event',
+      severity: n.type,
+      title: n.title,
+      message: n.message,
+      dismissable: true,
+      notificationId: n.id,
+    });
+  }
+
+  return items;
 }
 
