@@ -20,9 +20,13 @@ export function useGame() {
   const [showDifficulty, setShowDifficulty] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const startGame = useCallback((difficulty: Difficulty) => {
+  const selectDifficulty = useCallback((difficulty: Difficulty) => {
     setState(createInitialState(difficulty));
     setShowDifficulty(false);
+  }, []);
+
+  const beginGame = useCallback(() => {
+    setState((s) => ({ ...s, gameStarted: true, paused: false }));
   }, []);
 
   const resetGame = useCallback(() => {
@@ -31,7 +35,7 @@ export function useGame() {
   }, []);
 
   const togglePause = useCallback(() => {
-    setState((s) => ({ ...s, paused: !s.paused }));
+    setState((s) => (s.gameStarted && !s.gameOver ? { ...s, paused: !s.paused } : s));
   }, []);
 
   const setSpeed = useCallback((speed: 1 | 2 | 4) => {
@@ -44,7 +48,7 @@ export function useGame() {
       intervalRef.current = null;
     }
 
-    if (state.paused || state.gameOver || showDifficulty) return;
+    if (!state.gameStarted || state.paused || state.gameOver || showDifficulty) return;
 
     const ms = BASE_TICK_MS / state.speed;
     intervalRef.current = setInterval(() => {
@@ -54,7 +58,7 @@ export function useGame() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [state.paused, state.gameOver, state.speed, showDifficulty]);
+  }, [state.gameStarted, state.paused, state.gameOver, state.speed, showDifficulty]);
 
   const actions = {
     buyInventory: (qty: number, source: InventorySource) =>
@@ -72,7 +76,8 @@ export function useGame() {
   return {
     state,
     showDifficulty,
-    startGame,
+    selectDifficulty,
+    beginGame,
     resetGame,
     togglePause,
     setSpeed,

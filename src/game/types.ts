@@ -68,6 +68,7 @@ export interface GameState {
   gameOver: boolean;
   gameOverReason: string | null;
   paused: boolean;
+  gameStarted: boolean;
   speed: GameSpeed;
   difficulty: Difficulty;
 

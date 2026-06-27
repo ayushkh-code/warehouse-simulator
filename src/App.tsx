@@ -1,7 +1,8 @@
 import { BulletinBoard } from './components/BulletinBoard';
 import { ControlPanel } from './components/ControlPanel';
 import { ForecastChart } from './components/ForecastChart';
-import { DifficultySelect, GameOver } from './components/GameScreens';
+import { GameOver, DifficultySelect } from './components/GameScreens';
+import { PauseButton, StartGameOverlay } from './components/GameControls';
 import { HealthPanel } from './components/HealthPanel';
 import { HistoryChart } from './components/HistoryChart';
 import { InventoryOrders } from './components/InventoryOrders';
@@ -13,7 +14,8 @@ export default function App() {
   const {
     state,
     showDifficulty,
-    startGame,
+    selectDifficulty,
+    beginGame,
     resetGame,
     togglePause,
     setSpeed,
@@ -21,16 +23,25 @@ export default function App() {
   } = useGame();
 
   if (showDifficulty) {
-    return <DifficultySelect onSelect={startGame} />;
+    return <DifficultySelect onSelect={selectDifficulty} />;
   }
 
   return (
-    <div className="min-h-screen flex flex-col game-shell">
-      <TopBar state={state} onTogglePause={togglePause} onSetSpeed={setSpeed} />
+    <div className="min-h-screen flex flex-col game-shell relative">
+      <TopBar state={state} onSetSpeed={setSpeed} />
       <WeekTicker state={state} />
+
+      {state.gameStarted && !state.gameOver && (
+        <PauseButton paused={state.paused} onToggle={togglePause} />
+      )}
+
       <BulletinBoard state={state} onDismiss={actions.dismissNotification} />
 
-      <main className="flex-1 flex flex-col lg:flex-row gap-3 p-3 overflow-hidden">
+      <main className="flex-1 flex flex-col lg:flex-row gap-3 p-3 overflow-hidden relative">
+        {!state.gameStarted && !state.gameOver && (
+          <StartGameOverlay state={state} onStart={beginGame} />
+        )}
+
         <section className="flex-1 flex flex-col gap-3 min-w-0">
           <HealthPanel state={state} />
           <ForecastChart state={state} />

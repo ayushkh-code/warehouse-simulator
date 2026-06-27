@@ -14,7 +14,6 @@ import {
 
 interface TopBarProps {
   state: GameState;
-  onTogglePause: () => void;
   onSetSpeed: (speed: GameSpeed) => void;
 }
 
@@ -84,13 +83,13 @@ function MoraleGauge({ morale }: { morale: number }) {
   );
 }
 
-export function TopBar({ state, onTogglePause, onSetSpeed }: TopBarProps) {
+export function TopBar({ state, onSetSpeed }: TopBarProps) {
   const cashAlert = state.cash < 0;
   const ratio = backlogRatio(state.backlog, state.throughputCapacity);
   const stress = backlogStress(ratio);
 
   return (
-    <header className="game-hud-bar px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
+    <header className="game-hud-bar px-4 py-2.5 pr-16 flex items-center justify-between gap-3 flex-wrap">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#22d3ee]/30 to-[#8b5cf6]/30 border border-[#22d3ee]/30 flex items-center justify-center">
           <span className="text-sm">📦</span>
@@ -134,31 +133,26 @@ export function TopBar({ state, onTogglePause, onSetSpeed }: TopBarProps) {
         <MoraleGauge morale={state.morale} />
       </div>
 
-      <div className="flex items-center gap-2">
-        <button
-          onClick={onTogglePause}
-          className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-md transition-all ${
-            state.paused
-              ? 'game-btn-primary'
-              : 'bg-[#1a2540] border border-[#243052] text-slate-300 hover:border-[#8b5cf6]/50'
-          }`}
-        >
-          {state.paused ? '▶ Play' : '⏸ Pause'}
-        </button>
-        {([1, 2, 4] as const).map((spd) => (
-          <button
-            key={spd}
-            onClick={() => onSetSpeed(spd)}
-            className={`px-2.5 py-1.5 text-xs tabular-nums font-bold rounded-md border transition-all ${
-              state.speed === spd
-                ? 'bg-[#8b5cf6]/25 border-[#8b5cf6]/60 text-[#c4b5fd]'
-                : 'bg-[#1a2540] border-[#243052] text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            {spd}×
-          </button>
-        ))}
-      </div>
+      {state.gameStarted && (
+        <div className="flex items-center gap-1.5">
+          <span className="text-[9px] uppercase tracking-wider text-slate-600 mr-1 hidden sm:inline">
+            Speed
+          </span>
+          {([1, 2, 4] as const).map((spd) => (
+            <button
+              key={spd}
+              onClick={() => onSetSpeed(spd)}
+              className={`px-2 py-1 text-xs tabular-nums font-bold rounded-md border transition-all ${
+                state.speed === spd
+                  ? 'bg-[#8b5cf6]/25 border-[#8b5cf6]/60 text-[#c4b5fd]'
+                  : 'bg-[#1a2540] border-[#243052] text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              {spd}×
+            </button>
+          ))}
+        </div>
+      )}
     </header>
   );
 }

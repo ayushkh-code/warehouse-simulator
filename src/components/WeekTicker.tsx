@@ -73,17 +73,27 @@ export function WeekTicker({ state }: WeekTickerProps) {
         </div>
         <div
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold ${
-            state.paused
-              ? 'bg-[#1a2540] border border-[#243052] text-slate-500'
-              : 'bg-[#22d3ee]/10 border border-[#22d3ee]/40 text-[#22d3ee]'
+            !state.gameStarted
+              ? 'bg-[#f0c14b]/10 border border-[#f0c14b]/40 text-[#f0c14b]'
+              : state.paused
+                ? 'bg-[#1a2540] border border-[#243052] text-slate-500'
+                : 'bg-[#22d3ee]/10 border border-[#22d3ee]/40 text-[#22d3ee]'
           }`}
         >
           <span
             className={`w-2 h-2 rounded-full ${
-              state.paused ? 'bg-slate-600' : 'bg-[#22d3ee] animate-pulse shadow-[0_0_8px_#22d3ee]'
+              !state.gameStarted
+                ? 'bg-[#f0c14b]'
+                : state.paused
+                  ? 'bg-slate-600'
+                  : 'bg-[#22d3ee] animate-pulse shadow-[0_0_8px_#22d3ee]'
             }`}
           />
-          {state.paused ? 'Paused' : `Running ${state.speed}×`}
+          {!state.gameStarted
+            ? 'Ready'
+            : state.paused
+              ? 'Paused'
+              : `Running ${state.speed}×`}
         </div>
       </div>
     </div>
