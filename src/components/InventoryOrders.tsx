@@ -11,8 +11,8 @@ export function InventoryOrders({ state }: InventoryOrdersProps) {
   );
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-lg p-3">
-      <h2 className="text-xs uppercase tracking-widest text-slate-500 font-medium mb-2">
+    <div className="game-panel game-panel-accent-gold p-3">
+      <h2 className="text-xs uppercase tracking-[0.2em] text-[#f0c14b] font-bold mb-2">
         In-Transit Orders
       </h2>
       {orders.length === 0 ? (

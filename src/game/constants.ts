@@ -45,3 +45,10 @@ export const BASE_DEMAND = 500;
 export const BASE_THROUGHPUT = 1500;
 export const BASE_LABOR = 10;
 export const BASE_INVENTORY = 2800;
+
+/** Weeks before disruptive random events can begin. */
+export const EVENT_GRACE_WEEKS = 12;
+/** Minimum weeks between disruptive events (strike, breakdown, etc.). */
+export const EVENT_COOLDOWN_WEEKS = 8;
+/** Minimum weeks between positive bonus events. */
+export const GOOD_EVENT_COOLDOWN_WEEKS = 6;

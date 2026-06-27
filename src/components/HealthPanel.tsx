@@ -103,8 +103,8 @@ export function HealthPanel({ state }: { state: GameState }) {
   const last = state.history[state.history.length - 1];
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 space-y-3">
-      <h2 className="text-xs uppercase tracking-widest text-slate-500 font-medium">
+    <div className="game-panel game-panel-accent-cyan p-3 space-y-3">
+      <h2 className="text-xs uppercase tracking-[0.2em] text-[#22d3ee] font-bold">
         Ops Health
       </h2>
 

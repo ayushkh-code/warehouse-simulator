@@ -9,6 +9,8 @@ import {
   DOMESTIC_LEAD_TIME,
   DOMESTIC_UNIT_COST,
   EQUIPMENT_COST_PER_STEP,
+  EVENT_COOLDOWN_WEEKS,
+  GOOD_EVENT_COOLDOWN_WEEKS,
   HISTORY_LENGTH,
   INTERNATIONAL_LEAD_TIME,
   INTERNATIONAL_UNIT_COST,
@@ -19,7 +21,7 @@ import {
   TRAINING_COST_PER_STEP,
   TRAINING_SOFT_CAP,
 } from './constants';
-import { decayEventModifiers, rollRandomEvents } from './events';
+import { decayEventModifiers, rollRandomEvents, advanceEventCooldowns } from './events';
 import type {
   ActionPreview,
   Difficulty,
@@ -31,6 +33,7 @@ import type {
 import {
   computeFixedOverhead,
   computeNetWorth,
+  computeWeeklyPoints,
   effectiveCapacity,
   equipmentBoost,
   generateForecast,
@@ -91,6 +94,10 @@ export function createInitialState(difficulty: Difficulty = 'normal'): GameState
     lastEffectiveCapacity: 0,
     lastRevenue: 0,
     lastCosts: 0,
+    score: 0,
+    lastWeekPoints: 0,
+    weeksSinceLastEvent: EVENT_COOLDOWN_WEEKS,
+    weeksSinceLastGoodEvent: GOOD_EVENT_COOLDOWN_WEEKS,
   };
 
   const { forecast, forecastWeeks } = generateForecast(
@@ -207,6 +214,17 @@ export function tick(state: GameState): GameState {
     s.paused = true;
   }
 
+  const backlogRatioVal = s.backlog / Math.max(1, s.throughputCapacity);
+  const weekPoints = computeWeeklyPoints(
+    s.week,
+    fulfilled,
+    demand,
+    backlogRatioVal,
+    s.morale,
+  );
+  s.lastWeekPoints = weekPoints;
+  s.score += weekPoints;
+
   // History
   s.history = [
     ...s.history,
@@ -216,7 +234,8 @@ export function tick(state: GameState): GameState {
       throughput: fulfilled,
       backlog: s.backlog,
       effectiveCapacity: cap,
-      backlogRatio: s.backlog / Math.max(1, s.throughputCapacity),
+      backlogRatio: backlogRatioVal,
+      pointsEarned: weekPoints,
     },
   ].slice(-HISTORY_LENGTH);
 
@@ -226,7 +245,7 @@ export function tick(state: GameState): GameState {
 
   // Random events (before advancing forecast)
   const eventUpdates = rollRandomEvents(s);
-  s = { ...s, ...eventUpdates };
+  s = { ...s, ...eventUpdates, ...advanceEventCooldowns(state, eventUpdates) };
 
   // Advance week & forecast
   s.week += 1;

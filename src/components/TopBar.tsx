@@ -6,10 +6,10 @@ import {
 import {
   backlogRatio,
   backlogStress,
-  BACKLOG_STRESS_COLORS,
   formatBacklogRatio,
   formatCurrency,
   formatNumber,
+  formatScore,
 } from '../game/utils';
 
 interface TopBarProps {
@@ -18,33 +18,44 @@ interface TopBarProps {
   onSetSpeed: (speed: GameSpeed) => void;
 }
 
+const STRESS_COLORS = {
+  ok: 'text-[#34d399]',
+  watch: 'text-[#f0c14b]',
+  churn: 'text-[#fb923c]',
+  critical: 'text-[#fb7185]',
+};
+
 function Stat({
   label,
   value,
   sub,
-  alert,
   valueClass,
+  highlight,
 }: {
   label: string;
   value: string;
   sub?: string;
-  alert?: boolean;
   valueClass?: string;
+  highlight?: boolean;
 }) {
   return (
-    <div className="flex flex-col min-w-[100px]">
-      <span className="text-[10px] uppercase tracking-widest text-slate-500 font-medium">
+    <div
+      className={`flex flex-col min-w-[90px] px-2 py-1 rounded-md ${
+        highlight ? 'game-score-badge' : ''
+      }`}
+    >
+      <span className="text-[9px] uppercase tracking-widest text-slate-500 font-medium">
         {label}
       </span>
       <span
         className={`tabular-nums text-lg font-semibold leading-tight ${
-          valueClass ?? (alert ? 'text-amber-400 stat-flash' : 'text-slate-100')
+          valueClass ?? 'text-slate-100'
         }`}
       >
         {value}
       </span>
       {sub && (
-        <span className="tabular-nums text-[11px] text-slate-500">{sub}</span>
+        <span className="tabular-nums text-[10px] text-slate-500">{sub}</span>
       )}
     </div>
   );
@@ -52,20 +63,20 @@ function Stat({
 
 function MoraleGauge({ morale }: { morale: number }) {
   const color =
-    morale >= 70 ? 'bg-teal-500' : morale >= 40 ? 'bg-amber-500' : 'bg-red-500';
+    morale >= 70 ? 'bg-[#34d399]' : morale >= 40 ? 'bg-[#f0c14b]' : 'bg-[#fb7185]';
   return (
-    <div className="flex flex-col min-w-[120px]">
-      <span className="text-[10px] uppercase tracking-widest text-slate-500 font-medium">
+    <div className="flex flex-col min-w-[110px] px-2">
+      <span className="text-[9px] uppercase tracking-widest text-slate-500 font-medium">
         Morale
       </span>
       <div className="flex items-center gap-2 mt-0.5">
-        <div className="flex-1 h-2 bg-slate-800 rounded-sm overflow-hidden">
+        <div className="flex-1 h-2 bg-[#1a2540] rounded-full overflow-hidden border border-[#243052]">
           <div
-            className={`h-full ${color} transition-all duration-500`}
+            className={`h-full ${color} transition-all duration-500 rounded-full`}
             style={{ width: `${morale}%` }}
           />
         </div>
-        <span className="tabular-nums text-sm font-semibold text-slate-200 w-8 text-right">
+        <span className="tabular-nums text-sm font-semibold text-slate-200 w-7 text-right">
           {Math.round(morale)}
         </span>
       </div>
@@ -77,23 +88,35 @@ export function TopBar({ state, onTogglePause, onSetSpeed }: TopBarProps) {
   const cashAlert = state.cash < 0;
   const ratio = backlogRatio(state.backlog, state.throughputCapacity);
   const stress = backlogStress(ratio);
-  const backlogAlert = stress === 'churn' || stress === 'critical';
 
   return (
-    <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-4 py-3 flex items-center justify-between gap-4 flex-wrap">
-      <div className="flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-        <h1 className="text-sm font-semibold tracking-wide text-slate-300 uppercase">
-          Warehouse Simulator
-        </h1>
+    <header className="game-hud-bar px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#22d3ee]/30 to-[#8b5cf6]/30 border border-[#22d3ee]/30 flex items-center justify-center">
+          <span className="text-sm">📦</span>
+        </div>
+        <div>
+          <h1 className="text-xs font-bold tracking-[0.15em] text-[#22d3ee] uppercase">
+            Warehouse Simulator
+          </h1>
+          <span className="text-[9px] text-slate-500 uppercase tracking-wider">
+            {state.difficulty} mode
+          </span>
+        </div>
       </div>
 
-      <div className="flex items-center gap-6 flex-wrap">
+      <div className="flex items-center gap-1 flex-wrap">
+        <Stat
+          label="Score"
+          value={formatScore(state.score)}
+          highlight
+          valueClass="text-[#f0c14b]"
+          sub={state.lastWeekPoints > 0 ? `+${formatScore(state.lastWeekPoints)} last wk` : undefined}
+        />
         <Stat
           label="Cash"
           value={formatCurrency(state.cash)}
-          alert={cashAlert}
-          valueClass={cashAlert ? 'text-red-400 stat-flash' : undefined}
+          valueClass={cashAlert ? 'text-[#fb7185] stat-flash' : 'text-[#34d399]'}
           sub={
             state.negativeCashWeeks > 0
               ? `${state.negativeCashWeeks}/${NEGATIVE_CASH_LIMIT}wk deficit`
@@ -104,18 +127,21 @@ export function TopBar({ state, onTogglePause, onSetSpeed }: TopBarProps) {
         <Stat
           label="Backlog"
           value={formatBacklogRatio(ratio)}
-          valueClass={BACKLOG_STRESS_COLORS[stress]}
-          alert={backlogAlert}
-          sub={`${formatNumber(state.backlog)} units · fail ${BACKLOG_HARD_THRESHOLD}×`}
+          valueClass={STRESS_COLORS[stress]}
+          sub={`fail ${BACKLOG_HARD_THRESHOLD}×`}
         />
-        <Stat label="Inventory" value={formatNumber(state.inventory)} />
+        <Stat label="Stock" value={formatNumber(state.inventory)} />
         <MoraleGauge morale={state.morale} />
       </div>
 
       <div className="flex items-center gap-2">
         <button
           onClick={onTogglePause}
-          className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-slate-200 transition-colors"
+          className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-md transition-all ${
+            state.paused
+              ? 'game-btn-primary'
+              : 'bg-[#1a2540] border border-[#243052] text-slate-300 hover:border-[#8b5cf6]/50'
+          }`}
         >
           {state.paused ? '▶ Play' : '⏸ Pause'}
         </button>
@@ -123,10 +149,10 @@ export function TopBar({ state, onTogglePause, onSetSpeed }: TopBarProps) {
           <button
             key={spd}
             onClick={() => onSetSpeed(spd)}
-            className={`px-2.5 py-1.5 text-xs tabular-nums font-medium rounded border transition-colors ${
+            className={`px-2.5 py-1.5 text-xs tabular-nums font-bold rounded-md border transition-all ${
               state.speed === spd
-                ? 'bg-teal-500/20 border-teal-500 text-teal-400'
-                : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200'
+                ? 'bg-[#8b5cf6]/25 border-[#8b5cf6]/60 text-[#c4b5fd]'
+                : 'bg-[#1a2540] border-[#243052] text-slate-500 hover:text-slate-300'
             }`}
           >
             {spd}×

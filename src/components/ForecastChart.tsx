@@ -32,10 +32,10 @@ export function ForecastChart({ state }: ForecastChartProps) {
   }));
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 flex-1 min-h-[280px]">
+    <div className="game-panel game-panel-accent-violet p-4 flex-1 min-h-[280px]">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h2 className="text-xs uppercase tracking-widest text-slate-500 font-medium">
+          <h2 className="text-xs uppercase tracking-[0.2em] text-[#8b5cf6] font-bold">
             Demand Forecast
           </h2>
           <p className="text-[11px] text-slate-600 mt-0.5">

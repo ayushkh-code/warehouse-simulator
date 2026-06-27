@@ -34,8 +34,8 @@ export function HistoryChart({ state }: HistoryChartProps) {
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 flex-1 min-h-[240px]">
-      <h2 className="text-xs uppercase tracking-widest text-slate-500 font-medium mb-1">
+    <div className="game-panel game-panel-accent-cyan p-4 flex-1 min-h-[240px]">
+      <h2 className="text-xs uppercase tracking-[0.2em] text-[#22d3ee] font-bold mb-1">
         Throughput vs Demand
       </h2>
       <p className="text-[10px] text-slate-600 mb-2">

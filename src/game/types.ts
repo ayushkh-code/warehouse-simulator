@@ -30,6 +30,7 @@ export interface HistoryEntry {
   backlog: number;
   effectiveCapacity: number;
   backlogRatio: number;
+  pointsEarned: number;
 }
 
 export interface DemandModifier {
@@ -79,6 +80,11 @@ export interface GameState {
   lastEffectiveCapacity: number;
   lastRevenue: number;
   lastCosts: number;
+
+  score: number;
+  lastWeekPoints: number;
+  weeksSinceLastEvent: number;
+  weeksSinceLastGoodEvent: number;
 }
 
 export interface ActionPreview {

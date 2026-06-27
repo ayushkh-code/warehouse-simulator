@@ -25,7 +25,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950">
+    <div className="min-h-screen flex flex-col game-shell">
       <TopBar state={state} onTogglePause={togglePause} onSetSpeed={setSpeed} />
       <WeekTicker state={state} />
       <BulletinBoard state={state} onDismiss={actions.dismissNotification} />

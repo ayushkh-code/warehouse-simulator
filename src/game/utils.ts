@@ -164,7 +164,27 @@ export function stressColor(
 }
 
 export function score(state: GameState): number {
-  return state.netWorth + state.week * 500;
+  return state.score;
+}
+
+/** Points earned each survived week — scales with longevity and performance. */
+export function computeWeeklyPoints(
+  week: number,
+  fulfilled: number,
+  demand: number,
+  ratio: number,
+  morale: number,
+): number {
+  const survival = 120 + week * 25;
+  const throughputBonus = Math.round(fulfilled * 1.2);
+  const keepUpBonus = demand > 0 && fulfilled >= demand * 0.9 ? 100 : 0;
+  const backlogPenalty = Math.round(Math.max(0, ratio - 2) * 100);
+  const moraleBonus = morale >= 75 ? 50 : morale >= 55 ? 20 : 0;
+  return Math.max(25, survival + throughputBonus + keepUpBonus + moraleBonus - backlogPenalty);
+}
+
+export function formatScore(n: number): string {
+  return n.toLocaleString('en-US');
 }
 
 /** Backlog as multiple of equipment throughput capacity (fail at BACKLOG_HARD_THRESHOLD×). */

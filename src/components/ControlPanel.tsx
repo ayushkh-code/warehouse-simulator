@@ -33,10 +33,10 @@ interface ControlPanelProps {
 function Badge({ type }: { type: 'CAPEX' | 'VARIABLE' }) {
   return (
     <span
-      className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded font-semibold ${
+      className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded font-bold ${
         type === 'CAPEX'
-          ? 'bg-teal-500/15 text-teal-400 border border-teal-500/30'
-          : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+          ? 'bg-[#f0c14b]/15 text-[#f0c14b] border border-[#f0c14b]/30'
+          : 'bg-[#8b5cf6]/15 text-[#c4b5fd] border border-[#8b5cf6]/30'
       }`}
     >
       {type}
@@ -80,14 +80,23 @@ function PreviewDelta({
 function Card({
   title,
   badge,
+  accent = 'cyan',
   children,
 }: {
   title: string;
   badge: 'CAPEX' | 'VARIABLE';
+  accent?: 'cyan' | 'gold' | 'violet' | 'coral';
   children: React.ReactNode;
 }) {
+  const accentClass = {
+    cyan: 'game-panel-accent-cyan',
+    gold: 'game-panel-accent-gold',
+    violet: 'game-panel-accent-violet',
+    coral: 'game-panel-accent-coral',
+  }[accent];
+
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-lg p-3">
+    <div className={`game-panel ${accentClass} p-3`}>
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wide">
           {title}
@@ -116,15 +125,18 @@ export function ControlPanel({ state, actions }: ControlPanelProps) {
   const repairPreview = previewRepair(state);
 
   const btnClass = (enabled: boolean) =>
-    `w-full mt-2 py-1.5 text-xs font-medium uppercase tracking-wider rounded border transition-colors ${
+    `w-full mt-2 py-2 text-xs font-bold uppercase tracking-wider rounded-md transition-all ${
       enabled
-        ? 'bg-teal-500/20 border-teal-500/50 text-teal-300 hover:bg-teal-500/30'
-        : 'bg-slate-800 border-slate-700 text-slate-600 cursor-not-allowed'
+        ? 'game-btn-primary cursor-pointer'
+        : 'bg-[#1a2540] border border-[#243052] text-slate-600 cursor-not-allowed'
     }`;
 
   return (
     <aside className="w-full lg:w-80 xl:w-96 flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-120px)]">
-      <Card title="Buy Inventory" badge="CAPEX">
+      <div className="text-[9px] uppercase tracking-[0.2em] text-[#8b5cf6] font-bold px-1">
+        Command Panel
+      </div>
+      <Card title="Buy Inventory" badge="CAPEX" accent="gold">
         <div className="flex gap-2 mb-2">
           {(['domestic', 'international'] as const).map((src) => (
             <button
@@ -165,7 +177,7 @@ export function ControlPanel({ state, actions }: ControlPanelProps) {
         </button>
       </Card>
 
-      <Card title="Labor" badge="VARIABLE">
+      <Card title="Labor" badge="VARIABLE" accent="violet">
         <p className="text-[10px] text-slate-500 mb-2">
           Pool: <span className="text-slate-300 tabular-nums">{pool}</span> available ·{' '}
           <span className="tabular-nums">{state.laborForce}</span> hired
@@ -220,7 +232,7 @@ export function ControlPanel({ state, actions }: ControlPanelProps) {
         </div>
       </Card>
 
-      <Card title="Set Wage" badge="VARIABLE">
+      <Card title="Set Wage" badge="VARIABLE" accent="violet">
         <p className="text-[10px] text-slate-500 mb-1">
           Market wage: {formatCurrency(MARKET_WAGE)}/wk
         </p>
@@ -256,7 +268,7 @@ export function ControlPanel({ state, actions }: ControlPanelProps) {
         </button>
       </Card>
 
-      <Card title="Training" badge="CAPEX">
+      <Card title="Training" badge="CAPEX" accent="gold">
         <p className="text-[10px] text-slate-500">
           {formatCurrency(TRAINING_COST_PER_STEP)} · permanent productivity boost
         </p>
@@ -277,7 +289,7 @@ export function ControlPanel({ state, actions }: ControlPanelProps) {
         </button>
       </Card>
 
-      <Card title="Equipment" badge="CAPEX">
+      <Card title="Equipment" badge="CAPEX" accent="gold">
         <p className="text-[10px] text-slate-500">
           {formatCurrency(EQUIPMENT_COST_PER_STEP)} · +500 units/wk capacity
         </p>
@@ -299,7 +311,7 @@ export function ControlPanel({ state, actions }: ControlPanelProps) {
       </Card>
 
       {state.equipmentBreakdown && (
-        <Card title="Emergency Repair" badge="CAPEX">
+        <Card title="Emergency Repair" badge="CAPEX" accent="coral">
           <p className="text-[10px] text-red-400">Equipment breakdown active — throughput -25%</p>
           <button
             className={btnClass(repairPreview.canAfford)}
