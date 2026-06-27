@@ -36,9 +36,9 @@ export const DIFFICULTY_CONFIG: Record<
     label: string;
   }
 > = {
-  easy: { startingCash: 350_000, demandGrowth: 0.008, eventMultiplier: 0.6, label: 'Easy' },
-  normal: { startingCash: 250_000, demandGrowth: 0.008, eventMultiplier: 0.85, label: 'Normal' },
-  hard: { startingCash: 180_000, demandGrowth: 0.012, eventMultiplier: 1.4, label: 'Hard' },
+  easy: { startingCash: 700_000, demandGrowth: 0.008, eventMultiplier: 0.6, label: 'Easy' },
+  normal: { startingCash: 500_000, demandGrowth: 0.008, eventMultiplier: 0.85, label: 'Normal' },
+  hard: { startingCash: 360_000, demandGrowth: 0.012, eventMultiplier: 1.4, label: 'Hard' },
 };
 
 export const BASE_DEMAND = 500;
